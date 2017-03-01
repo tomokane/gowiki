@@ -2,53 +2,17 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"html/template"
-	"io/ioutil"
 	"net/http"
 	"regexp"
 )
 
-const (
-	edit_tmpl string = "./tmpl/edit.html"
-	view_tmpl string = "./tmpl/view.html"
-)
-
 var (
-	templates = template.Must(template.ParseFiles(edit_tmpl, view_tmpl))
+	Version  string
+	Revision string
+
 	validPath = regexp.MustCompile("^/(edit|save|view)/([a-zA-Z0-9]+)$")
 )
-
-type Page struct {
-	Title string
-	Body  []byte
-}
-
-func (p *Page) save() error {
-	filename := "./data/" + p.Title + ".txt"
-	fmt.Println("save()")
-	fmt.Println(filename)
-	return ioutil.WriteFile(filename, p.Body, 0600)
-}
-
-func loadPage(title string) (*Page, error) {
-	filename := "./data/" + title + ".txt"
-	fmt.Println("loadPage()")
-	fmt.Println(filename)
-	body, err := ioutil.ReadFile(filename)
-	if err != nil {
-		return nil, err
-	}
-	return &Page{Title: title, Body: body}, nil
-}
-
-func renderTemplate(w http.ResponseWriter, tmpl string, p *Page) {
-	err := templates.ExecuteTemplate(w, tmpl+".html", p)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-}
 
 func getTitle(w http.ResponseWriter, r *http.Request) (string, error) {
 	m := validPath.FindStringSubmatch(r.URL.Path)
@@ -103,6 +67,14 @@ func frontPageHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	println("version: " + Version)
+
+	templates["edit"] = template.Must(template.ParseFiles(edit_tmpl, layout_tmpl))
+	templates["view"] = template.Must(template.ParseFiles(view_tmpl, layout_tmpl))
+
+	fs := http.FileServer(http.Dir("static"))
+	http.Handle("/static/", http.StripPrefix("/static/", fs))
+
 	http.HandleFunc("/", frontPageHandler)
 	http.HandleFunc("/view/", makeHandler(viewHandler))
 	http.HandleFunc("/edit/", makeHandler(editHandler))
