@@ -4,16 +4,14 @@ import (
 	"html/template"
 	"log"
 	"net/http"
-)
-
-const (
-	layout_tmpl string = "./tmpl/layout.html"
-	edit_tmpl   string = "./tmpl/edit.html"
-	view_tmpl   string = "./tmpl/view.html"
+	"path/filepath"
 )
 
 var (
-	templates = make(map[string]*template.Template)
+	layout_tmpl, _ = filepath.Abs("./tmpl/layout.html")
+	edit_tmpl, _   = filepath.Abs("./tmpl/edit.html")
+	view_tmpl, _   = filepath.Abs("./tmpl/view.html")
+	templates      = make(map[string]*template.Template)
 )
 
 func renderTemplate(w http.ResponseWriter, tmpl string, p *Page) {
