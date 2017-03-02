@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"html/template"
 	"net/http"
 	"regexp"
 )
@@ -68,9 +67,6 @@ func frontPageHandler(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	println("version: " + Version)
-
-	templates["edit"] = template.Must(template.ParseFiles(edit_tmpl, layout_tmpl))
-	templates["view"] = template.Must(template.ParseFiles(view_tmpl, layout_tmpl))
 
 	fs := http.FileServer(http.Dir("static"))
 	http.Handle("/static/", http.StripPrefix("/static/", fs))
